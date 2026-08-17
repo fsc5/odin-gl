@@ -30,7 +30,7 @@ main :: proc() {
 	w, h := glfw.GetFramebufferSize(window)
 	gl.Viewport(0, 0, w, h)
 
-	vertex_path, fragment_path := "./shaders/vertex.vs", "./shaders/fragment.fs"
+	vertex_path, fragment_path := "./shaders/vertex.vert", "./shaders/fragment.frag"
 	progId, progErr := cm.compile_prog(vertex_path, fragment_path)
 	assert(progErr == nil)
 
