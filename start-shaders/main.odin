@@ -1,9 +1,6 @@
 package main
 
-import "core:fmt"
-import "core:math"
-import "core:os"
-import "core:time"
+import cm "../common"
 import gl "vendor:OpenGL"
 import "vendor:glfw"
 
@@ -34,7 +31,7 @@ main :: proc() {
 	gl.Viewport(0, 0, w, h)
 
 	vertexPath, fragmentPath := "./shaders/vertex.vs", "./shaders/fragment.fs"
-	progId, progErr := compileProg(vertexPath, fragmentPath)
+	progId, progErr := cm.compileProg(vertexPath, fragmentPath)
 	assert(progErr == nil)
 
 	vertices := [?]f32 {
@@ -96,7 +93,7 @@ main :: proc() {
 		if (off >= 1.5) {
 			off = -1.5
 		}
-		setFloat(progId, "offset", off)
+		cm.setFloat(progId, "offset", off)
 		gl.DrawArrays(gl.TRIANGLES, 0, 3)
 
 		// Render screen with background color.
