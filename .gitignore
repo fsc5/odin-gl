@@ -1,0 +1,39 @@
+# Odin build output
+build/
+bin/
+out/
+
+# Compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Object / debug files
+*.o
+*.obj
+*.pdb
+
+# Odin cache / temporary files
+.odin-cache/
+
+# IDE / editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Local environment / config
+.env
+.env.*
+
+# Profiling / debug output
+*.log
+
+# Generated assets / temporary files
+tmp/
+temp/
