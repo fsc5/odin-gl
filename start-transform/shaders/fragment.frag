@@ -9,7 +9,8 @@ uniform sampler2D shinjiTexture;
 uniform float mixArg;
 
 
+
 void main()
 {
-    FragColor = mix(texture(reiTexture, TexCoord), texture(shinjiTexture, 1 - TexCoord), mixArg);
+    FragColor = mix(texture(reiTexture, 1 - TexCoord), texture(shinjiTexture, 1 - TexCoord), mixArg);
 }

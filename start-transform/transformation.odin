@@ -4,8 +4,11 @@ import cm "../common"
 import gl "vendor:OpenGL"
 import "vendor:glfw"
 import img "core:image"
+import "core:image/jpeg"
 import "core:bytes"
 import "core:math"
+import "core:math/linalg"
+import "core:fmt"
 
 
 main :: proc() {
@@ -39,10 +42,10 @@ main :: proc() {
 
 	vertices := [?]f32 {
 	// positions          // colors     // texture coords
-     0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   2.0, 2.0,   // top right
-     0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   2.0, 0.0,   // bottom right
+     0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0,   // top right
+     0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0,   // bottom right
     -0.5, -0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0,   // bottom left
-    -0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 2.0    // top left
+    -0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0    // top left
 	}
 	indices := [?]u32 {
 		0,1,3,
@@ -118,16 +121,21 @@ main :: proc() {
 	gl.GenerateMipmap(gl.TEXTURE_2D)
 	img.destroy(shinji_img)
 
+
+
+
 	// Render loop
 	gl.UseProgram(progId)
 	cm.set_int(progId,"reiTexture", 0)
 	cm.set_int(progId,"shinjiTexture", 1)
 
-	mix:f32 = 0
+	// Transformation
+	// trans := linalg.matrix4_translate_f32(linalg.Vector3f32{1,1,0})
 
+
+	sin_scale:f32 = 0
 	for !glfw.WindowShouldClose(window) {
 		glfw.PollEvents()
-
 
 		gl.ClearColor(0.2, 0.3, 0.3, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
@@ -137,14 +145,25 @@ main :: proc() {
 		gl.ActiveTexture(gl.TEXTURE1)
 		gl.BindTexture(gl.TEXTURE_2D, shinji_texture)
 
-		gl.BindVertexArray(vao)
+		trans := linalg.matrix4_rotate_f32(cast(f32)glfw.GetTime(), linalg.VECTOR3F32_Z_AXIS)
+		trans *=  linalg.matrix4_translate_f32(linalg.Vector3f32{0.2,-0.3,0})
 
-		mix += 0.01
-		if (mix >= math.PI * 2.0)
-		{
-			mix = 0
+		cm.set_matrix4f32(progId, "transform", &trans)
+		cm.set_float(progId, "mixArg", 1)
+
+		gl.BindVertexArray(vao)
+		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, rawptr(nil))
+
+		sin_scale += 0.1
+		if(sin_scale >= math.PI * 2) {
+			sin_scale = 0
 		}
-		cm.set_float(progId, "mixArg", (math.sin(mix) + 1) * 0.5) // sin waving for change instead of keyboard input
+		// scale := math.sin(sin_scale) // Inverting
+		scale := (math.sin(sin_scale) + 1) / 2
+		trans = linalg.matrix4_scale_f32(linalg.Vector3f32{scale,scale,1})
+		trans *= linalg.matrix4_translate_f32(linalg.Vector3f32{-0.4, 0.5,0})
+		cm.set_matrix4f32(progId, "transform", &trans)
+		cm.set_float(progId, "mixArg", 0)
 		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, rawptr(nil))
 
 		// Render screen with background color.

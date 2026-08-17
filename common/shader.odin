@@ -1,5 +1,6 @@
 package common
 
+import "core:math/linalg"
 import "core:fmt"
 import "core:os"
 import "core:strings"
@@ -20,6 +21,11 @@ set_float :: proc(program: u32, name: string, value: f32) {
 	nameC := strings.clone_to_cstring(name)
 	defer delete(nameC)
 	gl.Uniform1f(gl.GetUniformLocation(program, nameC), value)
+}
+set_matrix4f32 :: proc(program: u32, name: string, value: ^linalg.Matrix4f32) {
+	nameC := strings.clone_to_cstring(name)
+	defer delete(nameC)
+	gl.UniformMatrix4fv(gl.GetUniformLocation(program, nameC), 1, gl.FALSE, raw_data(value))
 }
 
 compile_prog :: proc(vertex_path, fragment_path: string) -> (id: u32, err: os.Error) {
