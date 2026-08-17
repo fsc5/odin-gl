@@ -30,8 +30,8 @@ main :: proc() {
 	w, h := glfw.GetFramebufferSize(window)
 	gl.Viewport(0, 0, w, h)
 
-	vertexPath, fragmentPath := "./shaders/vertex.vs", "./shaders/fragment.fs"
-	progId, progErr := cm.compileProg(vertexPath, fragmentPath)
+	vertex_path, fragment_path := "./shaders/vertex.vs", "./shaders/fragment.fs"
+	progId, progErr := cm.compile_prog(vertex_path, fragment_path)
 	assert(progErr == nil)
 
 	vertices := [?]f32 {
@@ -93,7 +93,7 @@ main :: proc() {
 		if (off >= 1.5) {
 			off = -1.5
 		}
-		cm.setFloat(progId, "offset", off)
+		cm.set_float(progId, "offset", off)
 		gl.DrawArrays(gl.TRIANGLES, 0, 3)
 
 		// Render screen with background color.
