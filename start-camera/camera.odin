@@ -253,20 +253,21 @@ main :: proc() {
 }
 
 process_input :: proc(window: glfw.WindowHandle, camera: ^cm.FlyCamera, deltaTime:f32) {
+	processor := cm.fly_cam_process_keyboard_as_fps
 	if (glfw.GetKey(window, glfw.KEY_ESCAPE) == glfw.PRESS){
 		 glfw.SetWindowShouldClose(window, true);
 	}
    if (glfw.GetKey(window, glfw.KEY_W) == glfw.PRESS){
-   		cm.fly_cam_process_keyboard(camera, .FORWARD, deltaTime)
+   		processor(camera, .FORWARD, deltaTime)
    }
    if (glfw.GetKey(window, glfw.KEY_A) == glfw.PRESS){
-   		cm.fly_cam_process_keyboard(camera, .LEFT, deltaTime)
+   		processor(camera, .LEFT, deltaTime)
    }
    if (glfw.GetKey(window, glfw.KEY_S) == glfw.PRESS){
-   		cm.fly_cam_process_keyboard(camera, .BACKWARD, deltaTime)
+   		processor(camera, .BACKWARD, deltaTime)
    }
    if (glfw.GetKey(window, glfw.KEY_D) == glfw.PRESS){
-   		cm.fly_cam_process_keyboard(camera, .RIGHT, deltaTime)
+   		processor(camera, .RIGHT, deltaTime)
    }
 }
 

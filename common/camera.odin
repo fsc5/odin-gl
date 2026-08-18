@@ -50,6 +50,18 @@ fly_cam_process_keyboard :: proc(cam: ^FlyCamera, direction: MovementDirections,
 	}
 }
 
+fly_cam_process_keyboard_as_fps :: proc(cam: ^FlyCamera, direction: MovementDirections, delta:f32 ) {
+	vel := cam.movement_speed * delta
+	front, right, _ := fly_cam_vectors(cam^)
+
+	switch(direction) {
+		case .FORWARD : cam.position += {front.x * vel, 0, front.z * vel}
+		case .BACKWARD: cam.position -= {front.x * vel, 0, front.z * vel}
+		case .LEFT: cam.position -= {right.x * vel, 0, right.z * vel}
+		case .RIGHT: cam.position += {right.x * vel, 0, right.z * vel}
+	}
+}
+
 fly_cam_process_mouse_move :: proc(cam: ^FlyCamera, x_off, y_off : f32, constrain_pitch : bool = true) {
 	cam.yaw += x_off * cam.mouse_sensitivity
 	cam.pitch += y_off * cam.mouse_sensitivity
