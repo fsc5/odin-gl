@@ -45,78 +45,74 @@ main :: proc() {
 	w, h := glfw.GetFramebufferSize(window)
 	gl.Viewport(0, 0, w, h)
 
-
 	// glfw camera controls
 	camera := cm.INIT_CAM
 	camera.position = {0,0,3}
-
 	input := InputState{
 		camera      = &camera,
 		first_mouse = true,
 	}
 
 	glfw.SetWindowUserPointer(window, &input)
-
 	glfw.SetInputMode(window, glfw.CURSOR, glfw.CURSOR_DISABLED)
-
 	glfw.SetCursorPosCallback(window, mouse_callback)
 	glfw.SetScrollCallback(window, scroll_callback)
 
 
-	vertex_path, fragment_path := "./shaders/vertex.vert", "./shaders/fragment.frag"
-	progId, progErr := cm.compile_prog(vertex_path, fragment_path)
-	assert(progErr == nil)
+	vertex_path, fragment_path := "./shaders/vertex.vert", "./shaders/object.frag"
+	object_prog, prog_err := cm.compile_prog(vertex_path, fragment_path)
+	assert(prog_err == nil)
+	fragment_path = "./shaders/source.frag"
+	light_prog, light_prog_err := cm.compile_prog(vertex_path, fragment_path)
+	assert(light_prog_err == nil)
 
 	vertices := [?]f32 {
-	 -0.5, -0.5, -0.5,  0.0, 0.0,
-     0.5, -0.5, -0.5,  1.0, 0.0,
-     0.5,  0.5, -0.5,  1.0, 1.0,
-     0.5,  0.5, -0.5,  1.0, 1.0,
-    -0.5,  0.5, -0.5,  0.0, 1.0,
-    -0.5,  -0.5, -0.5,  0.0, 0.0,
-    -0.5, -0.5,  0.5,  0.0, 0.0,
-     0.5, -0.5,  0.5,  1.0, 0.0,
-     0.5,  0.5,  0.5,  1.0, 1.0,
-     0.5,  0.5,  0.5,  1.0, 1.0,
-    -0.5,  0.5,  0.5,  0.0, 1.0,
-    -0.5, -0.5,  0.5,  0.0, 0.0,
-    -0.5,  0.5,  0.5,  1.0, 0.0,
-    -0.5,  0.5, -0.5,  1.0, 1.0,
-    -0.5, -0.5, -0.5,  0.0, 1.0,
-    -0.5, -0.5, -0.5,  0.0, 1.0,
-    -0.5, -0.5,  0.5,  0.0, 0.0,
-    -0.5,  0.5,  0.5,  1.0, 0.0,
-     0.5,  0.5,  0.5,  1.0, 0.0,
-     0.5,  0.5, -0.5,  1.0, 1.0,
-     0.5, -0.5, -0.5,  0.0, 1.0,
-     0.5, -0.5, -0.5,  0.0, 1.0,
-     0.5, -0.5,  0.5,  0.0, 0.0,
-     0.5,  0.5,  0.5,  1.0, 0.0,
-    -0.5, -0.5, -0.5,  0.0, 1.0,
-     0.5, -0.5, -0.5,  1.0, 1.0,
-     0.5, -0.5,  0.5,  1.0, 0.0,
-     0.5, -0.5,  0.5,  1.0, 0.0,
-    -0.5, -0.5,  0.5,  0.0, 0.0,
-    -0.5, -0.5, -0.5,  0.0, 1.0,
-    -0.5,  0.5, -0.5,  0.0, 1.0,
-     0.5,  0.5, -0.5,  1.0, 1.0,
-     0.5,  0.5,  0.5,  1.0, 0.0,
-     0.5,  0.5,  0.5,  1.0, 0.0,
-    -0.5,  0.5,  0.5,  0.0, 0.0,
-    -0.5,  0.5, -0.5,  0.0, 1.0
-	}
+	 -0.5, -0.5, -0.5,
+     0.5, -0.5, -0.5,
+     0.5,  0.5, -0.5,
+     0.5,  0.5, -0.5,
+    -0.5,  0.5, -0.5,
+    -0.5,  -0.5, -0.5,
+    -0.5, -0.5,  0.5,
+     0.5, -0.5,  0.5,
+     0.5,  0.5,  0.5,
+     0.5,  0.5,  0.5,
+    -0.5,  0.5,  0.5,
+    -0.5, -0.5,  0.5,
+    -0.5,  0.5,  0.5,
+    -0.5,  0.5, -0.5,
+    -0.5, -0.5, -0.5,
+    -0.5, -0.5, -0.5,
+    -0.5, -0.5,  0.5,
+    -0.5,  0.5,  0.5,
+     0.5,  0.5,  0.5,
+     0.5,  0.5, -0.5,
+     0.5, -0.5, -0.5,
+     0.5, -0.5, -0.5,
+     0.5, -0.5,  0.5,
+     0.5,  0.5,  0.5,
+    -0.5, -0.5, -0.5,
+     0.5, -0.5, -0.5,
+     0.5, -0.5,  0.5,
+     0.5, -0.5,  0.5,
+    -0.5, -0.5,  0.5,
+    -0.5, -0.5, -0.5,
+    -0.5,  0.5, -0.5,
+     0.5,  0.5, -0.5,
+     0.5,  0.5,  0.5,
+     0.5,  0.5,  0.5,
+    -0.5,  0.5,  0.5,
+    -0.5,  0.5, -0.5,	}
 	indices := [?]u32 {
 		0,1,3,
 		1,2,3
 	}
-	vao, vbo, ebo: u32
+	object_vao, vbo, ebo: u32
 
-	gl.GenVertexArrays(1, &vao)
+	gl.GenVertexArrays(1, &object_vao)
 	gl.GenBuffers(1, &vbo)
 	gl.GenBuffers(1, &ebo)
-
-	gl.BindVertexArray(vao)
-
+	gl.BindVertexArray(object_vao)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
 	gl.BufferData(
 		gl.ARRAY_BUFFER,
@@ -132,82 +128,28 @@ main :: proc() {
 		gl.STATIC_DRAW,
 	)
 
-	defer gl.DeleteVertexArrays(1, &vao)
+	defer gl.DeleteVertexArrays(1, &object_vao)
 	defer gl.DeleteBuffers(1, &vbo)
 	defer gl.DeleteBuffers(1, &ebo)
 
-
 	// position
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 5 * size_of(f32), uintptr(0))
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 3 * size_of(f32), uintptr(0))
 	gl.EnableVertexAttribArray(0)
-	// textures
-	gl.VertexAttribPointer(1, 2, gl.FLOAT, gl.FALSE, 5 * size_of(f32), uintptr(3 * size_of(f32)))
-	gl.EnableVertexAttribArray(1)
 
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST) // nearest pixel for downscaling
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR) // lin pixel for upscaling
-
-	rei_path, shinji_path := "textures/rei.jpg", "textures/shinji.jpg"
-	rei_img, err := img.load_from_file(rei_path, {.alpha_drop_if_present})
-	assert(err == nil)
-	assert(rei_img.channels == 3)
-	rei_texture : u32
-	gl.GenTextures(1, &rei_texture)
-	gl.BindTexture(gl.TEXTURE_2D, rei_texture)
-
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, cast(i32)rei_img.width, cast(i32)rei_img.height, 0, gl.RGB, gl.UNSIGNED_BYTE, raw_data(bytes.buffer_to_bytes(&rei_img.pixels)) )
-	gl.GenerateMipmap(gl.TEXTURE_2D)
-	img.destroy(rei_img)
-
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE) // x axis = s
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT) // y axis = t (z = r)
-
-	shinji_img, err_shinji := img.load_from_file(shinji_path, {.alpha_drop_if_present})
-	assert(err_shinji == nil)
-	assert(shinji_img.channels == 3)
-	shinji_texture : u32
-	gl.GenTextures(1, &shinji_texture)
-	gl.BindTexture(gl.TEXTURE_2D, shinji_texture)
-
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, cast(i32)shinji_img.width, cast(i32)shinji_img.height, 0, gl.RGB, gl.UNSIGNED_BYTE, raw_data(bytes.buffer_to_bytes(&shinji_img.pixels)) )
-	gl.GenerateMipmap(gl.TEXTURE_2D)
-	img.destroy(shinji_img)
+	// lightVao
+	light_vao : u32
+	gl.GenVertexArrays(1, &light_vao)
+	gl.BindVertexArray(light_vao)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 3 * size_of(f32), uintptr(0))
+	gl.EnableVertexAttribArray(0)
+	defer gl.DeleteVertexArrays(1, &light_vao)
 
 	// Render loop
-	gl.UseProgram(progId)
 	gl.Enable(gl.DEPTH_TEST)
-	cm.set_int(progId,"reiTexture", 0)
-	cm.set_int(progId,"shinjiTexture", 1)
-
-	//cam_pos := linalg.Vector3f32{0,0,3}
-	//cam_target := linalg.Vector3f32{0,0,0}
-	//cam_direction_rev := linalg.vector_normalize(cam_pos - cam_target)
-	//up := linalg.Vector3f32{0,1,0}
-	//cam_right := linalg.vector_normalize(linalg.vector_cross3(up, cam_direction_rev))
-	//cam_up := linalg.vector_normalize(linalg.vector_cross3(cam_direction_rev, cam_right))
-	//look_at := linalg.matrix3_look_at_f32(cam_pos, cam_target, {0,1,0})
-
-	//view := linalg.matrix4_translate_f32(linalg.Vector3f32{1,0,-4})
-
-
-	cube_positions := []linalg.Vector3f32 {
-	{ 0.0,  0.0,  0.0},
-    { 2.0,  5.0, -15.0},
-    {-1.5, -2.2, -2.5},
-    {-3.8, -2.0, -12.3},
-    { 2.4, -0.4, -3.5},
-    {-1.7,  3.0, -7.5},
-    { 1.3, -2.0, -2.5},
-    { 1.5,  2.0, -2.5},
-    { 1.5,  0.2, -1.5},
-    {-1.3,  1.0, -1.5}
-	}
+	light_trafo := linalg.matrix4_translate_f32({1.2, 1, 2}) * linalg.matrix4_scale_f32({0.2, 0.2, 0.2})
 
 	delta_time, last_frame :f32 = 0, 0
-
 	for !glfw.WindowShouldClose(window) {
 		glfw.PollEvents()
 		current_frame := cast(f32)glfw.GetTime();
@@ -218,34 +160,28 @@ main :: proc() {
 		gl.ClearColor(0.2, 0.3, 0.3, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		gl.ActiveTexture(gl.TEXTURE0)
-		gl.BindTexture(gl.TEXTURE_2D, rei_texture)
-		gl.ActiveTexture(gl.TEXTURE1)
-		gl.BindTexture(gl.TEXTURE_2D, shinji_texture)
-
-		radius:f32 = 10.0
-		time := cast(f32)glfw.GetTime()
-		/*cam_pos := linalg.Vector3f32{math.sin_f32(time) * radius, 0, math.cos_f32(time) * radius}
-		cam_target := linalg.Vector3f32{0,0,0}
-		look_at := linalg.matrix4_look_at_f32(cam_pos, cam_target, {0,1,0})*/
 		look_at := cm.fly_cam_look_at(input.camera^)
-
-		cm.set_matrix4f32(progId, "view", &look_at)
 		projection := linalg.matrix4_perspective_f32(math.to_radians_f32(input.camera.zoom), width / height, 0.1, 100 )
-		cm.set_matrix4f32(progId, "projection", &projection)
 
-		gl.BindVertexArray(vao)
-		for position, i in cube_positions {
-			model := linalg.matrix4_translate_f32(position)
-			if(i % 3 == 0){
-				model *= linalg.matrix4_rotate_f32(cast(f32)glfw.GetTime() * math.to_radians_f32(50), {0.5,1,0})
-			}
-			model *= linalg.matrix4_rotate_f32(math.to_radians_f32(cast(f32)(20 * i)), {1,0.3,0.5}) // additional unique rotation for all
-			cm.set_float(progId, "mixArg", cast(f32)i * 0.1)
-			cm.set_matrix4f32(progId, "model", &model)
-			gl.DrawArrays(gl.TRIANGLES, 0,36)
 
-		}
+		gl.UseProgram(light_prog)
+		gl.BindVertexArray(light_vao)
+
+		cm.set_matrix4f32(light_prog, "model", &light_trafo)
+		cm.set_matrix4f32(light_prog, "view", &look_at)
+		cm.set_matrix4f32(light_prog, "projection", &projection)
+		gl.DrawArrays(gl.TRIANGLES, 0,36)
+
+		gl.UseProgram(object_prog)
+		gl.BindVertexArray(object_vao)
+
+		identity := linalg.MATRIX4F32_IDENTITY
+		cm.set_matrix4f32(object_prog, "model", &identity)
+		cm.set_matrix4f32(object_prog, "view", &look_at)
+		cm.set_matrix4f32(object_prog, "projection", &projection)
+		cm.set_vec3(object_prog, "objectColor", &{1, 0.5, 0.31})
+		cm.set_vec3(object_prog, "lightColor", &{1, 1, 1})
+		gl.DrawArrays(gl.TRIANGLES, 0,36)
 
 		// Render screen with background color.
 		glfw.SwapBuffers(window)
@@ -253,7 +189,7 @@ main :: proc() {
 }
 
 process_input :: proc(window: glfw.WindowHandle, camera: ^cm.FlyCamera, deltaTime:f32) {
-	processor := cm.fly_cam_process_keyboard_as_fps
+	processor := cm.fly_cam_process_keyboard
 	if (glfw.GetKey(window, glfw.KEY_ESCAPE) == glfw.PRESS){
 		 glfw.SetWindowShouldClose(window, true);
 	}
