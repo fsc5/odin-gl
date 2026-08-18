@@ -10,6 +10,8 @@ import "core:math"
 import "core:math/linalg"
 import "core:fmt"
 
+width :: 1200
+height :: 800
 
 main :: proc() {
 	// Initialize glfw, specify OpenGL version.
@@ -20,7 +22,7 @@ main :: proc() {
 	glfw.WindowHint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 
 	// Create render window.
-	window := glfw.CreateWindow(1200, 800, "Learn Opengl", nil, nil)
+	window := glfw.CreateWindow(width, height, "Learn Opengl", nil, nil)
 	assert(window != nil)
 	defer glfw.DestroyWindow(window)
 	glfw.MakeContextCurrent(window)
@@ -41,11 +43,42 @@ main :: proc() {
 	assert(progErr == nil)
 
 	vertices := [?]f32 {
-	// positions          // colors     // texture coords
-     0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0,   // top right
-     0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0,   // bottom right
-    -0.5, -0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0,   // bottom left
-    -0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0    // top left
+	 -0.5, -0.5, -0.5,  0.0, 0.0,
+     0.5, -0.5, -0.5,  1.0, 0.0,
+     0.5,  0.5, -0.5,  1.0, 1.0,
+     0.5,  0.5, -0.5,  1.0, 1.0,
+    -0.5,  0.5, -0.5,  0.0, 1.0,
+    -0.5,  -0.5, -0.5,  0.0, 0.0,
+    -0.5, -0.5,  0.5,  0.0, 0.0,
+     0.5, -0.5,  0.5,  1.0, 0.0,
+     0.5,  0.5,  0.5,  1.0, 1.0,
+     0.5,  0.5,  0.5,  1.0, 1.0,
+    -0.5,  0.5,  0.5,  0.0, 1.0,
+    -0.5, -0.5,  0.5,  0.0, 0.0,
+    -0.5,  0.5,  0.5,  1.0, 0.0,
+    -0.5,  0.5, -0.5,  1.0, 1.0,
+    -0.5, -0.5, -0.5,  0.0, 1.0,
+    -0.5, -0.5, -0.5,  0.0, 1.0,
+    -0.5, -0.5,  0.5,  0.0, 0.0,
+    -0.5,  0.5,  0.5,  1.0, 0.0,
+     0.5,  0.5,  0.5,  1.0, 0.0,
+     0.5,  0.5, -0.5,  1.0, 1.0,
+     0.5, -0.5, -0.5,  0.0, 1.0,
+     0.5, -0.5, -0.5,  0.0, 1.0,
+     0.5, -0.5,  0.5,  0.0, 0.0,
+     0.5,  0.5,  0.5,  1.0, 0.0,
+    -0.5, -0.5, -0.5,  0.0, 1.0,
+     0.5, -0.5, -0.5,  1.0, 1.0,
+     0.5, -0.5,  0.5,  1.0, 0.0,
+     0.5, -0.5,  0.5,  1.0, 0.0,
+    -0.5, -0.5,  0.5,  0.0, 0.0,
+    -0.5, -0.5, -0.5,  0.0, 1.0,
+    -0.5,  0.5, -0.5,  0.0, 1.0,
+     0.5,  0.5, -0.5,  1.0, 1.0,
+     0.5,  0.5,  0.5,  1.0, 0.0,
+     0.5,  0.5,  0.5,  1.0, 0.0,
+    -0.5,  0.5,  0.5,  0.0, 0.0,
+    -0.5,  0.5, -0.5,  0.0, 1.0
 	}
 	indices := [?]u32 {
 		0,1,3,
@@ -80,14 +113,11 @@ main :: proc() {
 
 
 	// position
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 8 * size_of(f32), uintptr(0))
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 5 * size_of(f32), uintptr(0))
 	gl.EnableVertexAttribArray(0)
-	// color
-	gl.VertexAttribPointer(1, 3, gl.FLOAT, gl.FALSE, 8 * size_of(f32), uintptr(3 * size_of(f32)))
-	gl.EnableVertexAttribArray(1)
 	// textures
-	gl.VertexAttribPointer(2, 2, gl.FLOAT, gl.FALSE, 8 * size_of(f32), uintptr(6 * size_of(f32)))
-	gl.EnableVertexAttribArray(2)
+	gl.VertexAttribPointer(1, 2, gl.FLOAT, gl.FALSE, 5 * size_of(f32), uintptr(3 * size_of(f32)))
+	gl.EnableVertexAttribArray(1)
 
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST) // nearest pixel for downscaling
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR) // lin pixel for upscaling
@@ -121,50 +151,56 @@ main :: proc() {
 	gl.GenerateMipmap(gl.TEXTURE_2D)
 	img.destroy(shinji_img)
 
-
-
-
 	// Render loop
 	gl.UseProgram(progId)
+	gl.Enable(gl.DEPTH_TEST)
 	cm.set_int(progId,"reiTexture", 0)
 	cm.set_int(progId,"shinjiTexture", 1)
 
-	// Transformation
-	// trans := linalg.matrix4_translate_f32(linalg.Vector3f32{1,1,0})
+	view := linalg.matrix4_translate_f32(linalg.Vector3f32{1,0,-4})
+	projection := linalg.matrix4_perspective_f32(math.to_radians_f32(70), width / height, 0.1, 100 )
 
+	cube_positions := []linalg.Vector3f32 {
+	{ 0.0,  0.0,  0.0},
+    { 2.0,  5.0, -15.0},
+    {-1.5, -2.2, -2.5},
+    {-3.8, -2.0, -12.3},
+    { 2.4, -0.4, -3.5},
+    {-1.7,  3.0, -7.5},
+    { 1.3, -2.0, -2.5},
+    { 1.5,  2.0, -2.5},
+    { 1.5,  0.2, -1.5},
+    {-1.3,  1.0, -1.5}
+	}
 
-	sin_scale:f32 = 0
 	for !glfw.WindowShouldClose(window) {
 		glfw.PollEvents()
 
 		gl.ClearColor(0.2, 0.3, 0.3, 1)
-		gl.Clear(gl.COLOR_BUFFER_BIT)
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		gl.ActiveTexture(gl.TEXTURE0)
 		gl.BindTexture(gl.TEXTURE_2D, rei_texture)
 		gl.ActiveTexture(gl.TEXTURE1)
 		gl.BindTexture(gl.TEXTURE_2D, shinji_texture)
 
-		trans := linalg.matrix4_rotate_f32(cast(f32)glfw.GetTime(), linalg.VECTOR3F32_Z_AXIS)
-		trans *=  linalg.matrix4_translate_f32(linalg.Vector3f32{0.2,-0.3,0})
 
-		cm.set_matrix4f32(progId, "transform", &trans)
-		cm.set_float(progId, "mixArg", 1)
+
+		cm.set_matrix4f32(progId, "view", &view)
+		cm.set_matrix4f32(progId, "projection", &projection)
 
 		gl.BindVertexArray(vao)
-		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, rawptr(nil))
-
-		sin_scale += 0.1
-		if(sin_scale >= math.PI * 2) {
-			sin_scale = 0
+		for position, i in cube_positions {
+			model := linalg.matrix4_translate_f32(position)
+			if(i % 3 == 0){
+				model *= linalg.matrix4_rotate_f32(cast(f32)glfw.GetTime() * math.to_radians_f32(50), {0.5,1,0})
+			}
+			model *= linalg.matrix4_rotate_f32(math.to_radians_f32(cast(f32)(20 * i)), {1,0.3,0.5}) // additional unique rotation for all
+			cm.set_float(progId, "mixArg", cast(f32)i * 0.1)
+			cm.set_matrix4f32(progId, "model", &model)
+			gl.DrawArrays(gl.TRIANGLES, 0,36)
 		}
-		// scale := math.sin(sin_scale) // Inverting
-		scale := (math.sin(sin_scale) + 1) / 2
-		trans = linalg.matrix4_scale_f32(linalg.Vector3f32{scale,scale,1})
-		trans *= linalg.matrix4_translate_f32(linalg.Vector3f32{-0.4, 0.5,0})
-		cm.set_matrix4f32(progId, "transform", &trans)
-		cm.set_float(progId, "mixArg", 0)
-		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, rawptr(nil))
+
 
 		// Render screen with background color.
 		glfw.SwapBuffers(window)
