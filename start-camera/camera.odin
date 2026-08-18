@@ -8,10 +8,18 @@ import "core:image/jpeg"
 import "core:bytes"
 import "core:math"
 import "core:math/linalg"
-import "core:fmt"
+import "base:runtime"
 
 width :: 1200
 height :: 800
+
+InputState :: struct {
+	camera: ^cm.FlyCamera,
+
+	first_mouse: bool,
+	last_x:      f64,
+	last_y:      f64,
+}
 
 main :: proc() {
 	// Initialize glfw, specify OpenGL version.
@@ -30,13 +38,30 @@ main :: proc() {
 	// Enable Vsync.
 	glfw.SwapInterval(1)
 
-
 	// Load OpenGL function pointers.
 	gl.load_up_to(3, 3, glfw.gl_set_proc_address)
 
 	// Set normalized device coords to window coords transformation.
 	w, h := glfw.GetFramebufferSize(window)
 	gl.Viewport(0, 0, w, h)
+
+
+	// glfw camera controls
+	camera := cm.INIT_CAM
+	camera.position = {0,0,3}
+
+	input := InputState{
+		camera      = &camera,
+		first_mouse = true,
+	}
+
+	glfw.SetWindowUserPointer(window, &input)
+
+	glfw.SetInputMode(window, glfw.CURSOR, glfw.CURSOR_DISABLED)
+
+	glfw.SetCursorPosCallback(window, mouse_callback)
+	glfw.SetScrollCallback(window, scroll_callback)
+
 
 	vertex_path, fragment_path := "./shaders/vertex.vert", "./shaders/fragment.frag"
 	progId, progErr := cm.compile_prog(vertex_path, fragment_path)
@@ -157,9 +182,16 @@ main :: proc() {
 	cm.set_int(progId,"reiTexture", 0)
 	cm.set_int(progId,"shinjiTexture", 1)
 
-	camera_pos := linalg.Vector3f32{0,0,3}
-	view := linalg.matrix4_translate_f32(linalg.Vector3f32{1,0,-4})
-	projection := linalg.matrix4_perspective_f32(math.to_radians_f32(70), width / height, 0.1, 100 )
+	//cam_pos := linalg.Vector3f32{0,0,3}
+	//cam_target := linalg.Vector3f32{0,0,0}
+	//cam_direction_rev := linalg.vector_normalize(cam_pos - cam_target)
+	//up := linalg.Vector3f32{0,1,0}
+	//cam_right := linalg.vector_normalize(linalg.vector_cross3(up, cam_direction_rev))
+	//cam_up := linalg.vector_normalize(linalg.vector_cross3(cam_direction_rev, cam_right))
+	//look_at := linalg.matrix3_look_at_f32(cam_pos, cam_target, {0,1,0})
+
+	//view := linalg.matrix4_translate_f32(linalg.Vector3f32{1,0,-4})
+
 
 	cube_positions := []linalg.Vector3f32 {
 	{ 0.0,  0.0,  0.0},
@@ -174,8 +206,14 @@ main :: proc() {
     {-1.3,  1.0, -1.5}
 	}
 
+	delta_time, last_frame :f32 = 0, 0
+
 	for !glfw.WindowShouldClose(window) {
 		glfw.PollEvents()
+		current_frame := cast(f32)glfw.GetTime();
+        delta_time = current_frame - last_frame;
+        last_frame = current_frame;
+		process_input(window, input.camera, delta_time)
 
 		gl.ClearColor(0.2, 0.3, 0.3, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
@@ -185,9 +223,15 @@ main :: proc() {
 		gl.ActiveTexture(gl.TEXTURE1)
 		gl.BindTexture(gl.TEXTURE_2D, shinji_texture)
 
+		radius:f32 = 10.0
+		time := cast(f32)glfw.GetTime()
+		/*cam_pos := linalg.Vector3f32{math.sin_f32(time) * radius, 0, math.cos_f32(time) * radius}
+		cam_target := linalg.Vector3f32{0,0,0}
+		look_at := linalg.matrix4_look_at_f32(cam_pos, cam_target, {0,1,0})*/
+		look_at := cm.fly_cam_look_at(input.camera^)
 
-
-		cm.set_matrix4f32(progId, "view", &view)
+		cm.set_matrix4f32(progId, "view", &look_at)
+		projection := linalg.matrix4_perspective_f32(math.to_radians_f32(input.camera.zoom), width / height, 0.1, 100 )
 		cm.set_matrix4f32(progId, "projection", &projection)
 
 		gl.BindVertexArray(vao)
@@ -200,10 +244,71 @@ main :: proc() {
 			cm.set_float(progId, "mixArg", cast(f32)i * 0.1)
 			cm.set_matrix4f32(progId, "model", &model)
 			gl.DrawArrays(gl.TRIANGLES, 0,36)
-		}
 
+		}
 
 		// Render screen with background color.
 		glfw.SwapBuffers(window)
 	}
+}
+
+process_input :: proc(window: glfw.WindowHandle, camera: ^cm.FlyCamera, deltaTime:f32) {
+	if (glfw.GetKey(window, glfw.KEY_ESCAPE) == glfw.PRESS){
+		 glfw.SetWindowShouldClose(window, true);
+	}
+   if (glfw.GetKey(window, glfw.KEY_W) == glfw.PRESS){
+   		cm.fly_cam_process_keyboard(camera, .FORWARD, deltaTime)
+   }
+   if (glfw.GetKey(window, glfw.KEY_A) == glfw.PRESS){
+   		cm.fly_cam_process_keyboard(camera, .LEFT, deltaTime)
+   }
+   if (glfw.GetKey(window, glfw.KEY_S) == glfw.PRESS){
+   		cm.fly_cam_process_keyboard(camera, .BACKWARD, deltaTime)
+   }
+   if (glfw.GetKey(window, glfw.KEY_D) == glfw.PRESS){
+   		cm.fly_cam_process_keyboard(camera, .RIGHT, deltaTime)
+   }
+}
+
+
+mouse_callback :: proc "c"  (
+	window: glfw.WindowHandle,
+	x_pos: f64,
+	y_pos: f64,
+) {
+	context = runtime.default_context()
+	input := cast(^InputState)glfw.GetWindowUserPointer(window)
+
+	if input.first_mouse {
+		input.last_x = x_pos
+		input.last_y = y_pos
+		input.first_mouse = false
+		return
+	}
+
+	x_offset := f32(x_pos - input.last_x)
+	y_offset := f32(input.last_y - y_pos)
+
+	input.last_x = x_pos
+	input.last_y = y_pos
+
+	cm.fly_cam_process_mouse_move(
+		input.camera,
+		x_offset,
+		y_offset,
+	)
+}
+
+scroll_callback :: proc "c" (
+	window: glfw.WindowHandle,
+	x_offset: f64,
+	y_offset: f64,
+) {
+	context = runtime.default_context()
+	input := cast(^InputState)glfw.GetWindowUserPointer(window)
+
+	cm.fly_cam_process_mouse_scroll(
+		input.camera,
+		f32(y_offset),
+	)
 }
