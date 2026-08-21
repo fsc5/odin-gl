@@ -3,9 +3,6 @@ package main
 import cm "../common"
 import gl "vendor:OpenGL"
 import "vendor:glfw"
-import img "core:image"
-import "core:image/jpeg"
-import "core:bytes"
 import "core:math"
 import "core:math/linalg"
 import "base:runtime"
@@ -59,10 +56,10 @@ main :: proc() {
 	glfw.SetScrollCallback(window, scroll_callback)
 
 
-	vertex_path, fragment_path := "./shaders/vertex.vert", "./shaders/object.frag"
+	vertex_path, fragment_path := "./shaders/object.vert", "./shaders/object.frag"
 	object_prog, prog_err := cm.compile_prog(vertex_path, fragment_path)
 	assert(prog_err == nil)
-	fragment_path = "./shaders/source.frag"
+	vertex_path, fragment_path  =  "./shaders/source.vert",  "./shaders/source.frag"
 	light_prog, light_prog_err := cm.compile_prog(vertex_path, fragment_path)
 	assert(light_prog_err == nil)
 

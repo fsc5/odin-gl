@@ -59,7 +59,7 @@ main :: proc() {
 	glfw.SetScrollCallback(window, scroll_callback)
 
 
-	vertex_path, fragment_path := "./shaders/vertex.vert", "./shaders/object.frag"
+	vertex_path, fragment_path := "./shaders/object.vert", "./shaders/object.frag"
 	object_prog, prog_err := cm.compile_prog(vertex_path, fragment_path)
 	assert(prog_err == nil)
 	fragment_path = "./shaders/source.frag"
@@ -67,42 +67,42 @@ main :: proc() {
 	assert(light_prog_err == nil)
 
 	vertices := [?]f32 {
-	 -0.5, -0.5, -0.5,
-     0.5, -0.5, -0.5,
-     0.5,  0.5, -0.5,
-     0.5,  0.5, -0.5,
-    -0.5,  0.5, -0.5,
-    -0.5,  -0.5, -0.5,
-    -0.5, -0.5,  0.5,
-     0.5, -0.5,  0.5,
-     0.5,  0.5,  0.5,
-     0.5,  0.5,  0.5,
-    -0.5,  0.5,  0.5,
-    -0.5, -0.5,  0.5,
-    -0.5,  0.5,  0.5,
-    -0.5,  0.5, -0.5,
-    -0.5, -0.5, -0.5,
-    -0.5, -0.5, -0.5,
-    -0.5, -0.5,  0.5,
-    -0.5,  0.5,  0.5,
-     0.5,  0.5,  0.5,
-     0.5,  0.5, -0.5,
-     0.5, -0.5, -0.5,
-     0.5, -0.5, -0.5,
-     0.5, -0.5,  0.5,
-     0.5,  0.5,  0.5,
-    -0.5, -0.5, -0.5,
-     0.5, -0.5, -0.5,
-     0.5, -0.5,  0.5,
-     0.5, -0.5,  0.5,
-    -0.5, -0.5,  0.5,
-    -0.5, -0.5, -0.5,
-    -0.5,  0.5, -0.5,
-     0.5,  0.5, -0.5,
-     0.5,  0.5,  0.5,
-     0.5,  0.5,  0.5,
-    -0.5,  0.5,  0.5,
-    -0.5,  0.5, -0.5,	}
+	-0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
+     0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
+     0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
+     0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
+    -0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
+    -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
+    -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
+     0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
+     0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
+     0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
+    -0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
+    -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
+    -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,
+    -0.5,  0.5, -0.5, -1.0,  0.0,  0.0,
+    -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,
+    -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,
+    -0.5, -0.5,  0.5, -1.0,  0.0,  0.0,
+    -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,
+     0.5,  0.5,  0.5,  1.0,  0.0,  0.0,
+     0.5,  0.5, -0.5,  1.0,  0.0,  0.0,
+     0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
+     0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
+     0.5, -0.5,  0.5,  1.0,  0.0,  0.0,
+     0.5,  0.5,  0.5,  1.0,  0.0,  0.0,
+    -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
+     0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
+     0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
+     0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
+    -0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
+    -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
+    -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,
+     0.5,  0.5, -0.5,  0.0,  1.0,  0.0,
+     0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
+     0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
+    -0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
+    -0.5,  0.5, -0.5,  0.0,  1.0,  0.0	}
 	indices := [?]u32 {
 		0,1,3,
 		1,2,3
@@ -133,21 +133,26 @@ main :: proc() {
 	defer gl.DeleteBuffers(1, &ebo)
 
 	// position
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 3 * size_of(f32), uintptr(0))
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 6 * size_of(f32), uintptr(0))
 	gl.EnableVertexAttribArray(0)
+	// normals
+	gl.VertexAttribPointer(1, 3, gl.FLOAT, gl.FALSE, 6 * size_of(f32), uintptr(3 * size_of(f32)))
+	gl.EnableVertexAttribArray(1)
 
-	// lightVao
+	// lightsource Vao
 	light_vao : u32
 	gl.GenVertexArrays(1, &light_vao)
 	gl.BindVertexArray(light_vao)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 3 * size_of(f32), uintptr(0))
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 6 * size_of(f32), uintptr(0))
 	gl.EnableVertexAttribArray(0)
 	defer gl.DeleteVertexArrays(1, &light_vao)
 
 	// Render loop
 	gl.Enable(gl.DEPTH_TEST)
-	light_trafo := linalg.matrix4_translate_f32({1.2, 1, 2}) * linalg.matrix4_scale_f32({0.2, 0.2, 0.2})
+
+
+	light_pos := linalg.Vector3f32{0, 0, 2}
 
 	delta_time, last_frame :f32 = 0, 0
 	for !glfw.WindowShouldClose(window) {
@@ -163,9 +168,12 @@ main :: proc() {
 		look_at := cm.fly_cam_look_at(input.camera^)
 		projection := linalg.matrix4_perspective_f32(math.to_radians_f32(input.camera.zoom), width / height, 0.1, 100 )
 
-
 		gl.UseProgram(light_prog)
 		gl.BindVertexArray(light_vao)
+
+		light_radius: f32 = 2
+		light_pos = linalg.Vector3f32{light_radius * math.sin(cast(f32)glfw.GetTime()), light_radius * math.cos(cast(f32)glfw.GetTime()), 0}
+		light_trafo := linalg.matrix4_translate_f32(light_pos) * linalg.matrix4_scale_f32({0.2, 0.2, 0.2})
 
 		cm.set_matrix4f32(light_prog, "model", &light_trafo)
 		cm.set_matrix4f32(light_prog, "view", &look_at)
@@ -176,11 +184,17 @@ main :: proc() {
 		gl.BindVertexArray(object_vao)
 
 		identity := linalg.MATRIX4F32_IDENTITY
+
+
+		normal_matrix := linalg.matrix4_inverse_transpose_f32(identity)
 		cm.set_matrix4f32(object_prog, "model", &identity)
+		cm.set_matrix4f32(object_prog, "normalMatrix", &normal_matrix)
 		cm.set_matrix4f32(object_prog, "view", &look_at)
 		cm.set_matrix4f32(object_prog, "projection", &projection)
 		cm.set_vec3(object_prog, "objectColor", &{1, 0.5, 0.31})
 		cm.set_vec3(object_prog, "lightColor", &{1, 1, 1})
+		cm.set_vec3(object_prog, "lightPos", &light_pos)
+		cm.set_vec3(object_prog, "viewPos", &camera.position)
 		gl.DrawArrays(gl.TRIANGLES, 0,36)
 
 		// Render screen with background color.

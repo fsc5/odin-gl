@@ -27,6 +27,11 @@ set_matrix4f32 :: proc(program: u32, name: string, value: ^linalg.Matrix4f32) {
 	defer delete(nameC)
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, nameC), 1, gl.FALSE, raw_data(value))
 }
+set_vec3 :: proc(program: u32, name: string, value: ^linalg.Vector3f32) {
+	nameC := strings.clone_to_cstring(name)
+	defer delete(nameC)
+	gl.Uniform3fv(gl.GetUniformLocation(program, nameC), 1, raw_data(value))
+}
 
 compile_prog :: proc(vertex_path, fragment_path: string) -> (id: u32, err: os.Error) {
 	vertex_data := os.read_entire_file_from_path(vertex_path, context.allocator) or_return
